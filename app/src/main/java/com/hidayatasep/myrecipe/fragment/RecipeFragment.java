@@ -15,35 +15,29 @@ import com.hidayatasep.myrecipe.adapter.DetailRecipeAdapter;
 import com.hidayatasep.myrecipe.base.BaseFragment;
 import com.hidayatasep.myrecipe.model.Recipe;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RecipeFragment extends BaseFragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "id";
+public class RecipeFragment extends BaseFragment implements DetailRecipeAdapter.OnReceipeClickListener {
 
-    // TODO: Rename and change types of parameters
-    private long mId;
+    private static final String ARG_PARAM1 = "recipe";
+
     private OnRecipeInteractionListener mListener;
 
     @BindView(R.id.recyler_view) RecyclerView mRecyclerView;
 
     private Recipe mRecipe;
-    public List<Long> mIdList;
 
     public RecipeFragment() {
         // Required empty public constructor
     }
 
-
-    public static RecipeFragment newInstance(long id) {
+    public static RecipeFragment newInstance(Recipe recipe) {
         RecipeFragment fragment = new RecipeFragment();
         Bundle args = new Bundle();
-        args.putLong(ARG_PARAM1, id);
+        args.putParcelable(ARG_PARAM1, recipe);
         fragment.setArguments(args);
         return fragment;
     }
@@ -52,7 +46,7 @@ public class RecipeFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mId = getArguments().getLong(ARG_PARAM1);
+            mRecipe = getArguments().getParcelable(ARG_PARAM1);
         }
 
     }
@@ -62,7 +56,8 @@ public class RecipeFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.fragment_recipe, container, false);
         ButterKnife.bind(this, view);
 
-        DetailRecipeAdapter adapter = new DetailRecipeAdapter(getActivity(), mIdList);
+        DetailRecipeAdapter adapter = new DetailRecipeAdapter(getActivity(), mRecipe);
+        adapter.setListener(this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -71,12 +66,6 @@ public class RecipeFragment extends BaseFragment {
         return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onRecipeInteraction(uri);
-        }
-    }
 
     @Override
     public void onAttach(Context context) {
@@ -95,18 +84,19 @@ public class RecipeFragment extends BaseFragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    @Override
+    public void onReceipeItemClick(int position) {
+        showToast("Posisi " + position);
+        if (mListener != null) {
+            mListener.onRecipeInteraction(position);
+        }
+    }
+
+    public void setListener(OnRecipeInteractionListener listener) {
+        mListener = listener;
+    }
+
     public interface OnRecipeInteractionListener {
-        // TODO: Update argument type and name
-        void onRecipeInteraction(Uri uri);
+        void onRecipeInteraction(int position);
     }
 }

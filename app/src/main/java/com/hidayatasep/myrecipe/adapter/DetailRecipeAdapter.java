@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.hidayatasep.myrecipe.R;
+import com.hidayatasep.myrecipe.model.Recipe;
 
 import java.util.List;
 
@@ -20,14 +21,19 @@ import butterknife.ButterKnife;
 
 public class DetailRecipeAdapter extends RecyclerView.Adapter<DetailRecipeAdapter.MyViewHolder>{
 
-    private List<Long> mListId;
-
+    private Recipe mRecipe;
     private final int TYPE_RECEIPE = 1;
     private final int TYPE_STEP = 2;
     private Context mContext;
 
-    public DetailRecipeAdapter(Context context, List<Long> listId) {
-        mListId = listId;
+    static OnReceipeClickListener mListener;
+
+    public interface OnReceipeClickListener{
+        public void onReceipeItemClick(int position);
+    }
+
+    public DetailRecipeAdapter(Context context, Recipe recipe) {
+        mRecipe = recipe;
         mContext = context;
     }
 
@@ -58,16 +64,29 @@ public class DetailRecipeAdapter extends RecyclerView.Adapter<DetailRecipeAdapte
 
     @Override
     public int getItemCount() {
-        return mListId.size() + 1;
+        return  (mRecipe.getStepsList().size() + 1);
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder{
+    public void setListener(OnReceipeClickListener mListener) {
+        DetailRecipeAdapter.mListener = mListener;
+    }
+
+    class MyViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener{
 
         @BindView(R.id.tv_detail_recipe) TextView mTextView;
 
         public MyViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if(mListener != null){
+                mListener.onReceipeItemClick(getAdapterPosition());
+            }
         }
     }
 

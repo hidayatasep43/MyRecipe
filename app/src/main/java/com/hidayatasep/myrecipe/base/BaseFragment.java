@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 /**
  * Created by hidayatasep43 on 6/6/2017.
@@ -49,6 +50,10 @@ public abstract class BaseFragment extends Fragment {
 
     protected boolean isProgressShowing() {
         return mProgressDialog.isShowing();
+    }
+
+    protected void showToast(String message){
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 
 
