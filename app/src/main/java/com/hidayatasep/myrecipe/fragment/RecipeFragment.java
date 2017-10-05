@@ -14,6 +14,7 @@ import com.hidayatasep.myrecipe.R;
 import com.hidayatasep.myrecipe.adapter.DetailRecipeAdapter;
 import com.hidayatasep.myrecipe.base.BaseFragment;
 import com.hidayatasep.myrecipe.model.Recipe;
+import com.hidayatasep.myrecipe.util.VerticalSpaceitemDecoration;
 
 import java.util.List;
 
@@ -62,6 +63,7 @@ public class RecipeFragment extends BaseFragment implements DetailRecipeAdapter.
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(adapter);
+        mRecyclerView.addItemDecoration(new VerticalSpaceitemDecoration(16));
 
         return view;
     }
@@ -86,7 +88,6 @@ public class RecipeFragment extends BaseFragment implements DetailRecipeAdapter.
 
     @Override
     public void onReceipeItemClick(int position) {
-        showToast("Posisi " + position);
         if (mListener != null) {
             mListener.onRecipeInteraction(position);
         }

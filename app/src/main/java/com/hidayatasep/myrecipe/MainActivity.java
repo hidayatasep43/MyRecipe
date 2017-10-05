@@ -2,6 +2,7 @@ package com.hidayatasep.myrecipe;
 
 import android.content.Intent;
 import android.os.Parcelable;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,7 +27,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,6 +50,14 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
     RecipeAdapter mAdapter;
 
     public static final String RECIPE = "recipe";
+
+    //testing
+    @VisibleForTesting
+    protected static final String ROW_TEXT = "ROW_TEXT";
+
+    @VisibleForTesting
+    protected static final String ITEM_TEXT_FORMAT = "item: %d";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,8 +92,6 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
             }
         });
 
-
-
     }
 
     @Override
@@ -90,6 +99,14 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(RECIPE, mRecipeList);
     }
+
+    @VisibleForTesting
+    protected static Map<String, Object> makeItem(int forRow) {
+        Map<String, Object> dataRow = new HashMap<>();
+        dataRow.put(ROW_TEXT, String.format(ITEM_TEXT_FORMAT, forRow));
+        return dataRow;
+    }
+
 
     private void setUpContent() {
         if(mRecipeList.isEmpty()){
@@ -112,71 +129,77 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
     }
 
     public void getRecipeData(){
-        OkHttpClient client = new OkHttpClient();
-        final Request request = new Request.Builder()
-                .url("https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json")
-                .build();
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, final IOException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mProgressDialog.isShowing()) dismissProgress();
-                        if(mSwipeRefreshLayout.isRefreshing()) mSwipeRefreshLayout.setRefreshing(false);
-                        Toast.makeText(MainActivity.this, R.string.error_label, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                final String result = response.body().string();
-                Timber.d("result = " + result);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mProgressDialog.isShowing()) dismissProgress();
-                        if(mSwipeRefreshLayout.isRefreshing()) mSwipeRefreshLayout.setRefreshing(false);
-
-                        if(result.isEmpty()){
+        if(Util.isNetworkConnected(this)){
+            OkHttpClient client = new OkHttpClient();
+            final Request request = new Request.Builder()
+                    .url("https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json")
+                    .build();
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, final IOException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(mProgressDialog.isShowing()) dismissProgress();
+                            if(mSwipeRefreshLayout.isRefreshing()) mSwipeRefreshLayout.setRefreshing(false);
                             Toast.makeText(MainActivity.this, R.string.error_label, Toast.LENGTH_SHORT).show();
-                        }else{
-                            try {
-                                mRecipeList.clear();
-                                mAdapter.notifyDataSetChanged();
-
-                                JSONArray jsonArray = new JSONArray(result);
-                                for(int i = 0; i < jsonArray.length(); i++) {
-                                    //get resep
-                                    final JSONObject recipeObject = jsonArray.getJSONObject(i);
-                                    Recipe recipe = new Recipe(recipeObject);
-                                    //get ingredients
-                                    final JSONArray ingredientObject = recipeObject.getJSONArray("ingredients");
-                                    for(int j = 0; j < ingredientObject.length(); j++){
-                                        Ingredients ingredients = new Ingredients(ingredientObject.getJSONObject(j));
-                                        recipe.AddIngridients(ingredients);
-                                    }
-                                    //get step
-                                    final JSONArray stepObject = recipeObject.getJSONArray("steps");
-                                    for(int j = 0; j < stepObject.length(); j++){
-                                        Steps steps= new Steps(stepObject.getJSONObject(j));
-                                        recipe.AddSteps(steps);
-                                    }
-                                    mRecipeList.add(recipe);
-                                    mAdapter.notifyDataSetChanged();
-                                }
-                                setUpContent();
-                            } catch (JSONException e) {
-                                Timber.e(e.toString());
-                            }
                         }
+                    });
+                }
 
-                    }
-                });
-            }
-        });
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    final String result = response.body().string();
+                    Timber.d("result = " + result);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(mProgressDialog.isShowing()) dismissProgress();
+                            if(mSwipeRefreshLayout.isRefreshing()) mSwipeRefreshLayout.setRefreshing(false);
+
+                            if(result.isEmpty()){
+                                Toast.makeText(MainActivity.this, R.string.error_label, Toast.LENGTH_SHORT).show();
+                            }else{
+                                try {
+                                    mRecipeList.clear();
+                                    mAdapter.notifyDataSetChanged();
+
+                                    JSONArray jsonArray = new JSONArray(result);
+                                    for(int i = 0; i < jsonArray.length(); i++) {
+                                        //get resep
+                                        final JSONObject recipeObject = jsonArray.getJSONObject(i);
+                                        Recipe recipe = new Recipe(recipeObject);
+                                        //get ingredients
+                                        final JSONArray ingredientObject = recipeObject.getJSONArray("ingredients");
+                                        for(int j = 0; j < ingredientObject.length(); j++){
+                                            Ingredients ingredients = new Ingredients(ingredientObject.getJSONObject(j));
+                                            recipe.AddIngridients(ingredients);
+                                        }
+                                        //get step
+                                        final JSONArray stepObject = recipeObject.getJSONArray("steps");
+                                        for(int j = 0; j < stepObject.length(); j++){
+                                            Steps steps= new Steps(stepObject.getJSONObject(j));
+                                            recipe.AddSteps(steps);
+                                        }
+                                        mRecipeList.add(recipe);
+                                        mAdapter.notifyDataSetChanged();
+                                    }
+                                    setUpContent();
+                                } catch (JSONException e) {
+                                    Timber.e(e.toString());
+                                }
+                            }
+
+                        }
+                    });
+                }
+            });
+        }else {
+            showToast(R.string.no_internet_connection);
+        }
     }
+
+
 
     @Override
     public void onRecipeClicked(int position) {

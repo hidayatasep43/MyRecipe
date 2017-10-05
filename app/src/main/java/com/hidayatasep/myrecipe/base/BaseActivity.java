@@ -3,6 +3,9 @@ package com.hidayatasep.myrecipe.base;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
+
+import com.hidayatasep.myrecipe.util.LocalPref;
 
 /**
  * Created by hidayatasep43 on 8/13/2017.
@@ -10,13 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 
 public class BaseActivity extends AppCompatActivity{
 
+    protected LocalPref localPref;
     protected ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        localPref = LocalPref.getInstance(this);
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setCancelable(false);
     }
@@ -59,6 +63,14 @@ public class BaseActivity extends AppCompatActivity{
 
     protected boolean isProgressShowing() {
         return mProgressDialog.isShowing();
+    }
+
+    protected void showToast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    protected void showToast(int stringId) {
+        showToast(getString(stringId));
     }
 
 }

@@ -5,12 +5,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.hidayatasep.myrecipe.R;
+import com.hidayatasep.myrecipe.model.Ingredients;
 import com.hidayatasep.myrecipe.model.Recipe;
-
-import java.util.List;
+import com.hidayatasep.myrecipe.model.Steps;
+import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -19,10 +21,10 @@ import butterknife.ButterKnife;
  * Created by hidayatasep43 on 8/20/2017.
  */
 
-public class DetailRecipeAdapter extends RecyclerView.Adapter<DetailRecipeAdapter.MyViewHolder>{
+public class DetailRecipeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     private Recipe mRecipe;
-    private final int TYPE_RECEIPE = 1;
+    private final int TYPE_INGRIDIENT = 1;
     private final int TYPE_STEP = 2;
     private Context mContext;
 
@@ -40,25 +42,47 @@ public class DetailRecipeAdapter extends RecyclerView.Adapter<DetailRecipeAdapte
     @Override
     public int getItemViewType(int position) {
         if(position == 0){
-            return TYPE_RECEIPE;
+            return TYPE_INGRIDIENT;
         }else {
             return TYPE_STEP;
         }
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_detail_recipe, parent, false);
-        return new MyViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if(viewType == TYPE_INGRIDIENT){
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.list_item_ingridient, parent, false);
+            return new IngridientViewHolder(view);
+        }else{
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.list_item_step, parent, false);
+            return new StepViewHolder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        if(holder.getItemViewType() == TYPE_RECEIPE){
-            holder.mTextView.setText(R.string.recipe_ingredients);
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if(holder.getItemViewType() == TYPE_INGRIDIENT){
+            IngridientViewHolder ingridientHolder = (IngridientViewHolder) holder;
+            String ingridient = "";
+            for(Ingredients ingredients: mRecipe.getIngredientsList()){
+                ingridient += "- " + ingredients.getQuantity() + " " + ingredients.getMeasure() + " of " + ingredients.getIngredient();
+                ingridient += "\n";
+            }
+            ingridientHolder.mTextViewIngridient.setText(ingridient);
         }else{
-            holder.mTextView.setText(String.format(mContext.getString(R.string.recipe_label), position));
+            StepViewHolder stepViewHolder = (StepViewHolder) holder;
+            Steps steps = mRecipe.getStepsList().get((position-1));
+            stepViewHolder.mTextViewStep.setText(steps.getShortDescription());
+            if(!steps.getThumbnailUrl().isEmpty()){
+                Picasso
+                    .with(mContext)
+                    .load(steps.getThumbnailUrl())
+                    .placeholder(R.drawable.ic_cake_black_36dp)
+                    .error(R.drawable.ic_cake_black_36dp)
+                    .into(stepViewHolder.mImageViewStep);
+            }
         }
     }
 
@@ -71,12 +95,24 @@ public class DetailRecipeAdapter extends RecyclerView.Adapter<DetailRecipeAdapte
         DetailRecipeAdapter.mListener = mListener;
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder
+    class IngridientViewHolder extends RecyclerView.ViewHolder{
+
+        @BindView(R.id.tv_ingridient) TextView mTextViewIngridient;
+
+        public IngridientViewHolder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+        }
+
+    }
+
+    class StepViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener{
 
-        @BindView(R.id.tv_detail_recipe) TextView mTextView;
+        @BindView(R.id.tv_step) TextView mTextViewStep;
+        @BindView(R.id.image_step) ImageView mImageViewStep;
 
-        public MyViewHolder(View itemView) {
+        public StepViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
             itemView.setOnClickListener(this);
