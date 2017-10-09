@@ -122,7 +122,7 @@ public class RecipeActivity extends BaseActivity implements RecipeFragment.OnRec
         Timber.d("masuk");
         if(findViewById(R.id.frame_detail_layout) != null){
             if(mDetailStepFragment != null){
-              mDetailStepFragment.UpdateDetail(position);
+                mDetailStepFragment.UpdateDetail(position);
             }
         }else{
             DetailStepFragment detailStepFragment = DetailStepFragment.newInstance(mRecipe, position);

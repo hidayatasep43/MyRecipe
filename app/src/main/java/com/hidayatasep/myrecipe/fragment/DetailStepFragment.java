@@ -80,6 +80,9 @@ public class DetailStepFragment extends BaseFragment {
 
     //update view
     public void UpdateDetail(Recipe recipe, int position){
+        //release video
+        releseExoPlayer();
+
         mRecipe = recipe;
         mPosition = position;
         Steps steps = recipe.getStepsList().get((position - 1));
@@ -92,10 +95,13 @@ public class DetailStepFragment extends BaseFragment {
             Timber.d("null");
             return;
         }
+        mRecyclerView.setAdapter(null);
         mRecyclerView.setAdapter(adapter);
     }
 
     public void UpdateDetail(int position){
+        releseExoPlayer();
+
         mPosition = position;
         Steps steps = mRecipe.getStepsList().get((position - 1));
         mTextViewTitle.setText(steps.getShortDescription());
@@ -104,6 +110,7 @@ public class DetailStepFragment extends BaseFragment {
             Timber.d("null");
             return;
         }
+        mRecyclerView.setAdapter(null);
         mRecyclerView.setAdapter(adapter);
     }
 
@@ -120,5 +127,11 @@ public class DetailStepFragment extends BaseFragment {
 
     public void setPlaybackPosition(long playbackPosition) {
         this.playbackPosition = playbackPosition;
+    }
+
+    public void releseExoPlayer(){
+        if(mAdapter != null) mAdapter.releaseExoPlayer();
+        playbackPosition = 0;
+        Timber.d("release exoplayer");
     }
 }
