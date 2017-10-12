@@ -180,7 +180,7 @@ public class DetailStepAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         notifyDataSetChanged();
     }
 
-    class VideoViewHolder extends RecyclerView.ViewHolder{
+    public class VideoViewHolder extends RecyclerView.ViewHolder{
 
         @BindView(R.id.video_player) SimpleExoPlayerView mSimpleExoPlayerView;
 
@@ -190,7 +190,7 @@ public class DetailStepAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
     }
 
-    class TextViewHolder extends RecyclerView.ViewHolder{
+    public class TextViewHolder extends RecyclerView.ViewHolder{
 
         @BindView(R.id.tv_detail_recipe) TextView mTextView;
 

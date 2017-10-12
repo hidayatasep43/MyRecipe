@@ -2,7 +2,10 @@ package com.hidayatasep.myrecipe;
 
 import android.content.Intent;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
+import android.support.test.espresso.IdlingResource;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,6 +18,7 @@ import android.widget.Toast;
 
 import com.hidayatasep.myrecipe.adapter.RecipeAdapter;
 import com.hidayatasep.myrecipe.base.BaseActivity;
+import com.hidayatasep.myrecipe.idlingresource.RecipeIdlingResource;
 import com.hidayatasep.myrecipe.model.Ingredients;
 import com.hidayatasep.myrecipe.model.Recipe;
 import com.hidayatasep.myrecipe.model.Steps;
@@ -51,18 +55,14 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
 
     public static final String RECIPE = "recipe";
 
-    //testing
-    @VisibleForTesting
-    protected static final String ROW_TEXT = "ROW_TEXT";
-
-    @VisibleForTesting
-    protected static final String ITEM_TEXT_FORMAT = "item: %d";
-
+    // The Idling Resource which will be null in production.
+    @Nullable private RecipeIdlingResource mIdlingResource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         ButterKnife.bind(this);
 
         if(savedInstanceState != null){
@@ -91,20 +91,14 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
                 doGetRecipeData();
             }
         });
-
     }
+
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(RECIPE, mRecipeList);
-    }
-
-    @VisibleForTesting
-    protected static Map<String, Object> makeItem(int forRow) {
-        Map<String, Object> dataRow = new HashMap<>();
-        dataRow.put(ROW_TEXT, String.format(ITEM_TEXT_FORMAT, forRow));
-        return dataRow;
     }
 
 
@@ -130,6 +124,7 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
 
     public void getRecipeData(){
         if(Util.isNetworkConnected(this)){
+
             OkHttpClient client = new OkHttpClient();
             final Request request = new Request.Builder()
                     .url("https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json")
@@ -185,6 +180,7 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
                                         mAdapter.notifyDataSetChanged();
                                     }
                                     setUpContent();
+
                                 } catch (JSONException e) {
                                     Timber.e(e.toString());
                                 }
@@ -199,12 +195,23 @@ public class MainActivity extends BaseActivity implements RecipeAdapter.OnRecipe
         }
     }
 
-
-
     @Override
     public void onRecipeClicked(int position) {
         Intent intent = new Intent(MainActivity.this, RecipeActivity.class);
         intent.putExtra(RECIPE, mRecipeList.get(position));
         startActivity(intent);
     }
+
+    /**
+     * Only called from test, creates and returns a new {@link RecipeIdlingResource}.
+     */
+    @VisibleForTesting
+    @NonNull
+    public IdlingResource getIdlingResource() {
+        if (mIdlingResource == null) {
+            mIdlingResource = new RecipeIdlingResource(2000);
+        }
+        return mIdlingResource;
+    }
+
 }
